@@ -85,11 +85,6 @@ class Minigamewindow < Gosu::Window
 	def button_up(id)
 		case id
 		when Gosu::MsLeft
-			if @holding.height == 1 && @holding? then
-				@holding.x = mouse_x / $TILE
-			else
-				@holding.y = mouse_y / $TILE
-			end
 			@holding? = false
 		end
 	end
