@@ -327,6 +327,7 @@ class Car < Entity
 end
 
 class NPC < Entity
+	attr_reader :met?
 	def initialize(window, name, title, x, y, room, says, hears)
 		@window = window
 		@name = name
@@ -339,6 +340,7 @@ class NPC < Entity
 		@height = @image.height
 		@says = says
 		@hears = hears
+		@met? = false
 	end
 	def draw
 		@image.draw(@x,@y, 2)
@@ -347,6 +349,7 @@ class NPC < Entity
 		conversation(@title, @says, @hears)
 	end
 	def talk(item) # Overriden using singleton classes on every NPC
+		@met? = true
 		dialogue()
 	end
 end
@@ -381,6 +384,7 @@ class Player < Entity
 			@room = level
 			if x != nil and y != nil then
 				@x = x
+
 				@y = y
 			end
 			return true
