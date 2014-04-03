@@ -16,8 +16,6 @@ $VERBOSE = nil unless $DEBUG
 
 print "."
 $boss_talk = false
-$ladder = false
-$notes = 0
 
 def collision(player, object)
 	pxmin = player.x
@@ -93,18 +91,6 @@ def transition(window, player, mode, target_ids, target_xs = [], target_ys = [])
 		player.tp(window, target_ids[target], target_xs[target], target_ys[target])
 	end
 end
-def accusation(window)
-	target = smi("Accusations:", "Accusations?", ["No accusation now", "Mother", "Mr. Caleb Bossman", "Neighbor Eli Goldrobe", "Friend Graham", "Cynthia Chapeau", "Professor Andrew Reactor"])
-	if target == 0 then
-		nil
-	elsif target == 3 then
-		smi("You Win", "You Win", ["You Win"])
-		window.close
-	else
-		smi("You Lose", "You Lose", ["You Lose"])
-		window.close
-	end
-end
 
 class Entity
 	attr_reader :x, :y, :width, :height, :room
@@ -134,9 +120,11 @@ end
 class Anesthesia < Drawable
 	def initialize(window, x, y, room)
 		super(window, x, y, "anesthesia", room)
+		@window = window
 	end
 	def talk(item)
 		conversation("", Hash["" => "You notice a bottle of anesthesia!", "Continue, asking Graham about it." => 0], Hash["You notice a bottle of anesthesia!" => ["Continue, asking Graham about it."]])
+		@window.player.give(self)
 		$graham.anesthesia1
 	end
 end
@@ -144,9 +132,10 @@ end
 class Camera < Drawable
 	def initialize(window, x, y, room)
 		super(window, x, y, "camera", room)
+		@window = window
 	end
 	def talk(item)
-		if $ladder then
+		if @window.player.has_a? Ladder then
 			ladder = "The camera reveals the boss at work during the theft."
 			conversation("Inspection", Hash["" => "You climb the ladder.", "View footage" => ladder, "OK" => 0], Hash["You climb the ladder." => ["View footage"], ladder => ["OK"]])
 		else
@@ -161,28 +150,29 @@ class Camera < Drawable
 end
 
 class Plant < Drawable
-	def initialize(window, room, x, y, note = false)
+	def initialize(window, room, x, y, note = false, code = 0)
 		if note then
 			super(window, x, y, "plantnote", room)
 		else
 			super(window, x, y, "plant", room)
 		end
 		@note = note
+		case @note
+		when 0
+			@contents = "the first digit is #{code}"
+		when 1
+			@contents = "the second digit is #{code}"
+		when 2
+			@contents = "the third digit is #{code}"
+		else
+			@contents = ""
+		end
 	end
 	def talk(item)
 		if @note then
-			case $notes
-			when 0
-				contents = "The note reads: the first digit is 4"
-				$notes = 1
-			when 1
-				contents = "The note reads: the second digit is 0"
-				$notes = 2
-			else
-				contents = "The note reads: the third digit is 4"
-				$notes = 3
-			end
-			conversation("Inspection", Hash["" => "A plant with a note on it.", "OK" => 0, "Read note" => contents], Hash["A plant with a note on it." => ["Read note", "OK"], contents => ["OK"]])
+			@window.player.give @contents
+			contents = "The note reads: #{@contents}"
+			conversation("Inspection", Hash["" => "A plant with a note on it.", "OK" => 0, "Read note" => contents], Hash["A plant with a note on it." => ["Read note"], contents => ["OK"]])
 			@note = false
 			@image = Gosu::Image.new(@window, "res#{$TILE}/obj/plant.png")
 		else
@@ -197,7 +187,7 @@ class Ladder < Drawable
 	end
 	def talk(item)
 		if $boss_talk then
-			$ladder = true
+			@window.player.give(self)
 			@room = -1
 			take = "You take the ladder. It might be useful."
 			conversation("Inspection", Hash["" => take, "OK" => 0], Hash[take => ["OK"]])
@@ -209,18 +199,21 @@ class Ladder < Drawable
 end
 
 class Briefcase < Drawable
-	def initialize(window, x, y, room)
+	def initialize(window, x, y, room, code)
 		super(window, x, y, "briefcase", room)
+		@code = code
 	end
 	def talk(item)
-		if $notes == 3 then
-			take = "A briefcase, locked with a 3-digit code.\nTry the code from the notes?"
-			discovery = "Why...These are all details of the security system of art museum!\nShe's a thief, and she stole one of the most famous paintings in the entire country!\nWell, as much as I hate to admit it,\nif the pair of them were out stealing this thing last night,\nthey couldn't have had time to steal my invention.\nThey're far from innocent,\nbut they're no longer suspects."
-			conversation("Inspection", Hash["" => take, "No" => 0, "Yes" => discovery, "OK" => 0], Hash[take => ["Yes", "No"], discovery => ["OK"]])
+		first  = smi("A briefcase, locked with a 3-digit code.", "Enter the first digit",  ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+		second = smi("A briefcase, locked with a 3-digit code.", "Enter the second digit", ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+		third  = smi("A briefcase, locked with a 3-digit code.", "Enter the third digit",  ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+		code = first*100 + second*10+third
+		if code == 404 || code == @code then
+			brief_response = "Why...These are all details of the security system of art museum!\nShe's a thief, and she stole one of the most famous paintings in the entire country!\nWell, as much as I hate to admit it,\nif the pair of them were out stealing this thing last night,\nthey couldn't have had time to steal my invention.\nThey're far from innocent,\nbut they're no longer suspects."
 		else
-			notake = "A briefcase, locked with a 3-digit code."
-			conversation("Inspection", Hash["" => notake, "OK" => 0], Hash[notake => ["OK"]])
+			brief_response = "The briefcase remains locked."
 		end
+		conversation("Inspection", Hash["" => brief_response, "OK" => 0], Hash[brief_response => ["OK"]])
 	end
 end
 
@@ -327,7 +320,7 @@ class Car < Entity
 end
 
 class NPC < Entity
-	attr_reader :met?
+	attr_reader :met, :name
 	def initialize(window, name, title, x, y, room, says, hears)
 		@window = window
 		@name = name
@@ -340,22 +333,22 @@ class NPC < Entity
 		@height = @image.height
 		@says = says
 		@hears = hears
-		@met? = false
+		@met = false
 	end
 	def draw
 		@image.draw(@x,@y, 2)
 	end
-	def dialogue()
+	def dialogue() # Overriden using singleton classes on every NPC
 		conversation(@title, @says, @hears)
 	end
-	def talk(item) # Overriden using singleton classes on every NPC
-		@met? = true
+	def talk(item)
+		@met = true
 		dialogue()
 	end
 end
 
 class Player < Entity
-	attr_reader :name, :gender
+	attr_reader :name, :gender, :inventory
 	def initialize(window, name, gender, x, y)
 		@window = window
 		@room = @window.room
@@ -371,6 +364,7 @@ class Player < Entity
 		@dx = 0
 		@dy = 0
 		@speed = 1
+		@inventory = []
 		@skills = []
 	end
 	def width
@@ -459,11 +453,34 @@ class Player < Entity
 		@dx = 0
 		@dy = 0
 	end
+	def showinventory
+		lines = []
+		@inventory.each do |item|
+			if item.is_a? String then
+				lines << "A note which says #{item.inspect}."
+			else
+				lines << "A #{item.class} called #{item.to_s}."
+			end
+		end
+		smi("Inventory", "List of items:", lines)
+	end
+	def give(item)
+		@inventory << item
+	end
+	def has?(item)
+		@inventory.include? item
+	end
+	def has_a?(hasclass)
+		@inventory.each do |item|
+			return true if item.is_a? hasclass
+		end
+		return false
+	end
 end
 
 class GameWindow < Gosu::Window
 	attr_accessor :items
-	attr_reader :room
+	attr_reader :room, :player
 	def initialize
 		super($WIDTH, $HEIGHT, false) # width, height, isfullscreen
 		self.caption = $GAMENAME
@@ -514,21 +531,27 @@ class GameWindow < Gosu::Window
 		@items << Camera.new(self, 0, 200, 7)
 		@items << Ladder.new(self, 280, -20, 6)
 
-		@items << Plant.new(self, 4, 80, 100, true)
+		code = []
+		code[0] = rand(10)
+		code[1] = rand(10)
+		code[2] = rand(10)
+
+		@items << Plant.new(self, 4, 80, 100, 0, code[0])
 		@items << Plant.new(self, 4, 120, 100)
 		@items << Plant.new(self, 5, 480, 100)
 		@items << Plant.new(self, 5, 520, 100)
 		@items << Plant.new(self, 5, 560, 100)
 		@items << Plant.new(self, 8, 50, 130)
 		@items << Plant.new(self, 8, 90, 130)
-		@items << Plant.new(self, 8, 130, 130, true)
+		@items << Plant.new(self, 8, 130, 130, 1, code[1])
 		@items << Plant.new(self, 9, 220, 20)
-		@items << Plant.new(self, 9, 180, 20, true)
+		@items << Plant.new(self, 9, 180, 20, 2, code[2])
 		@items << Plant.new(self, 9, 140, 20)
 		@items << Plant.new(self, 9, 100, 20)
 		@items << Plant.new(self, 9, 60, 20)
-
-		$briefcase = Briefcase.new(self, 120, 180, -1)
+		
+		code = code[0]*100+code[1]*10+code[2]
+		$briefcase = Briefcase.new(self, 120, 180, -1, code)
 		def $briefcase.go
 			@room = 9
 		end
@@ -621,8 +644,33 @@ class GameWindow < Gosu::Window
 			setlevel(9) if $DEBUG
 			@player.tp(self, 9) if $DEBUG
 		when Gosu::KbA
-			puts "a"
-			accusation(self)
+			target = smi("Accusations:", "Accusations?", ["No accusation now", "Mother", "Mr. Caleb Bossman", "Neighbor Eli Goldrobe", "Friend Graham", "Cynthia Chapeau", "Professor Andrew Reactor"])
+			case target
+			when 0
+				return
+			when 3
+				smi("You Win", "You Win", ["You Win"])
+				close
+			else
+				smi("You Lose", "You Lose", ["You Lose"])
+				close
+			end
+		when Gosu::KbP
+			names = ["Do not telephone"]
+			players = [nil]
+			@items.each do |item|
+				if item.is_a? NPC then
+					if item.met then
+						players << item
+						names << item.name
+					end
+				end
+			end
+			target = players[smi("Telephone:", "Whom to call?", names)]
+			return if target.nil?
+			target.talk(@player)
+		when Gosu::KbI
+			@player.showinventory
 		end
 		@player.button_down(id)
 	end
