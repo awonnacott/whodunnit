@@ -85,7 +85,7 @@ end
 def transition(window, player, mode, target_ids, target_xs = [], target_ys = [])
 	targets = ["Stay in this area"] + target_ids.map { |target| "Take #{mode} to #{room_id(target)}" }
 	target = smi("Use #{mode}?", "Use #{mode}?", targets)
-	if target != 0 then
+	if target != 0 && target != -1 then
 		target -= 1
 		window.setlevel(target_ids[target])
 		player.tp(window, target_ids[target], target_xs[target], target_ys[target])
@@ -170,11 +170,13 @@ class Plant < Drawable
 	end
 	def talk(item)
 		if @note then
-			@window.player.give @contents
 			contents = "The note reads: #{@contents}"
-			conversation("Inspection: Plant", Hash["" => "A plant with a note on it.", "OK" => 0, "Read note" => contents], Hash["A plant with a note on it." => ["Read note"], contents => ["OK"]])
-			@note = false
-			@image = Gosu::Image.new(@window, "res#{$TILE}/obj/plant.png")
+			lines = conversation("Inspection: Plant", Hash["" => "A plant with a note on it.", "OK" => 0, "Read note" => contents], Hash["A plant with a note on it." => ["Read note", "OK"], contents => ["OK"]])
+			if lines.include? "Read note" then
+				@window.player.give @contents
+				@note = false
+				@image = Gosu::Image.new(@window, "res#{$TILE}/obj/plant.png")
+			end
 		else
 			smi("Inspection: Plant", "A plant.", ["OK"])
 		end
@@ -205,8 +207,12 @@ class Briefcase < Drawable
 	end
 	def talk(item)
 		first  = smi("A briefcase, locked with a 3-digit code.", "Enter the first digit",  ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+		return if first == -1
 		second = smi("A briefcase, locked with a 3-digit code.", "Enter the second digit", ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+		return if second == -1
 		third  = smi("A briefcase, locked with a 3-digit code.", "Enter the third digit",  ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+		return if third == -1
+		return if [first, second, third].include? -1
 		code = first*100 + second*10+third
 		if code == 404 || code == @code then
 			brief_response = "Why...These are all details of the security system of art museum!\nShe's a thief, and she stole one of the most famous paintings in the entire country!\nWell, as much as I hate to admit it,\nif the pair of them were out stealing this thing last night,\nthey couldn't have had time to steal my invention.\nThey're far from innocent,\nbut they're no longer suspects."
@@ -646,7 +652,7 @@ class GameWindow < Gosu::Window
 		when Gosu::KbA
 			target = smi("Accusations:", "Accusations?", ["No accusation now", "Mother", "Mr. Caleb Bossman", "Neighbor Eli Goldrobe", "Friend Graham", "Cynthia Chapeau", "Professor Andrew Reactor"])
 			case target
-			when 0
+			when 0, -1
 				return
 			when 3
 				smi("You Win", "You Win", ["You Win"])
@@ -666,6 +672,7 @@ class GameWindow < Gosu::Window
 					end
 				end
 			end
+			players << nil # so that if smi returns -1 then target is nil
 			target = players[smi("Telephone:", "Whom to call?", names)]
 			return if target.nil?
 			target.talk(@player)
