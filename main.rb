@@ -701,8 +701,4 @@ print "."
 unless defined?(Ocra)
 	app = MenuApp.new
 	app.main_loop
-	#window = GameWindow.new
-	#puts "."
-	#window.show
-	#puts "Closing game"
 end
