@@ -123,7 +123,7 @@ class Anesthesia < Drawable
 		@window = window
 	end
 	def talk(item)
-		conversation("", Hash["" => "You notice a bottle of anesthesia!", "Continue, asking Graham about it." => 0], Hash["You notice a bottle of anesthesia!" => ["Continue, asking Graham about it."]])
+		smi("Anesthesia", "You notice a bottle of anesthesia!", ["Continue, asking Graham about it."])
 		@window.player.give(self)
 		$graham.anesthesia1
 	end
@@ -137,14 +137,14 @@ class Camera < Drawable
 	def talk(item)
 		if @window.player.has_a? Ladder then
 			ladder = "The camera reveals the boss at work during the theft."
-			conversation("Inspection", Hash["" => "You climb the ladder.", "View footage" => ladder, "OK" => 0], Hash["You climb the ladder." => ["View footage"], ladder => ["OK"]])
+			conversation("Inspection: Camera", Hash["" => "You climb the ladder.", "View footage" => ladder, "OK" => 0], Hash["You climb the ladder." => ["View footage"], ladder => ["OK"]])
 		else
 			if $boss_talk then
 				noladder = "Too high.\nYou need a ladder to examine the camera."
 			else
 				noladder = "A security camera. Out of reach."
 			end
-			conversation("Inspection", Hash["" => noladder, "OK" => 0], Hash[noladder => ["OK"]])
+			smi("Inspection: Camera", noladder, ["OK"])
 		end
 	end
 end
@@ -172,11 +172,11 @@ class Plant < Drawable
 		if @note then
 			@window.player.give @contents
 			contents = "The note reads: #{@contents}"
-			conversation("Inspection", Hash["" => "A plant with a note on it.", "OK" => 0, "Read note" => contents], Hash["A plant with a note on it." => ["Read note"], contents => ["OK"]])
+			conversation("Inspection: Plant", Hash["" => "A plant with a note on it.", "OK" => 0, "Read note" => contents], Hash["A plant with a note on it." => ["Read note"], contents => ["OK"]])
 			@note = false
 			@image = Gosu::Image.new(@window, "res#{$TILE}/obj/plant.png")
 		else
-			conversation("Inspection", Hash["" => "A plant.", "OK" => 0], Hash["A plant." => ["OK"]])
+			smi("Inspection: Plant", "A plant.", ["OK"])
 		end
 	end
 end
@@ -190,10 +190,10 @@ class Ladder < Drawable
 			@window.player.give(self)
 			@room = -1
 			take = "You take the ladder. It might be useful."
-			conversation("Inspection", Hash["" => take, "OK" => 0], Hash[take => ["OK"]])
+			smi("Inspection: Ladder", take, ["OK"])
 		else
 			notake = "A ladder. Why? No clue."
-			conversation("Inspection", Hash["" => notake, "OK" => 0], Hash[notake => ["OK"]])
+			smi("Inspection: Ladder", notake, ["OK"])
 		end
 	end
 end
@@ -213,7 +213,7 @@ class Briefcase < Drawable
 		else
 			brief_response = "The briefcase remains locked."
 		end
-		conversation("Inspection", Hash["" => brief_response, "OK" => 0], Hash[brief_response => ["OK"]])
+		smi("Inspection: Briefcase", brief_response, ["OK"])
 	end
 end
 
