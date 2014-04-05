@@ -15,7 +15,6 @@ $DEBUG = false
 $VERBOSE = nil unless $DEBUG
 
 print "."
-$boss_talk = false
 
 def collision(player, object)
 	pxmin = player.x
@@ -125,7 +124,7 @@ class Anesthesia < Drawable
 	def talk(item)
 		smi("Anesthesia", "You notice a bottle of anesthesia!", ["Continue, asking Graham about it."])
 		@window.player.give(self)
-		$graham.anesthesia1
+		@window.graham.anesthesia1
 	end
 end
 
@@ -139,7 +138,7 @@ class Camera < Drawable
 			ladder = "The camera reveals the boss at work during the theft."
 			conversation("Inspection: Camera", Hash["" => "You climb the ladder.", "View footage" => ladder, "OK" => 0], Hash["You climb the ladder." => ["View footage"], ladder => ["OK"]])
 		else
-			if $boss_talk then
+			if window.boss.met then
 				noladder = "Too high.\nYou need a ladder to examine the camera."
 			else
 				noladder = "A security camera. Out of reach."
@@ -188,7 +187,7 @@ class Ladder < Drawable
 		super(window, x, y, "ladder", room)
 	end
 	def talk(item)
-		if $boss_talk then
+		if @window.boss.met then
 			@window.player.give(self)
 			@room = -1
 			take = "You take the ladder. It might be useful."
@@ -486,7 +485,7 @@ end
 
 class GameWindow < Gosu::Window
 	attr_accessor :items
-	attr_reader :room, :player
+	attr_reader :room, :player, :mother, :boss, :graham, :andrew, :cynthia, :eli, :briefcase
 	def initialize
 		super($WIDTH, $HEIGHT, false) # width, height, isfullscreen
 		self.caption = $GAMENAME
@@ -498,40 +497,39 @@ class GameWindow < Gosu::Window
 		@player = Player.new(self, "HAM", true, $WIDTH/2,$HEIGHT/2)
 		@items << @player
 
-		$mother = NPC.new(self, "Mother", "Mother", 250, 200, 1, Mother::Says, Mother::Hears)
-		@items << $mother
+		@mother = NPC.new(self, "Mother", "Mother", 250, 200, 1, Mother::Says, Mother::Hears)
+		@items << @mother
 		
-		$boss = NPC.new(self, "Caleb", "Mr. Bossman", 156, 0, 7, Caleb::Says, Caleb::Hears)
-		def $boss.dialogue
+		@boss = NPC.new(self, "Caleb", "Mr. Bossman", 156, 0, 7, Caleb::Says, Caleb::Hears)
+		def @boss.dialogue
 			conversation(@title, @says, @hears)
-			$boss_talk = true
 		end
-		@items << $boss
+		@items << @boss
 
-		$graham = NPC.new(self, "Graham", "Graham", 200, 220, 0, Graham::Says, Graham::Hears)
-		def $graham.anesthesia1
+		@graham = NPC.new(self, "Graham", "Graham", 200, 220, 0, Graham::Says, Graham::Hears)
+		def @graham.anesthesia1
 			@says = Graham::Says1
 			@hears = Graham::Hears1
 		end
-		@items << $graham
+		@items << @graham
 
-		$andrew = NPC.new(self, "Andrew", "Andrew", 60, 180, 9, Andrew::Says, Andrew::Hears)
-		def $andrew.go
+		@andrew = NPC.new(self, "Andrew", "Andrew", 60, 180, 9, Andrew::Says, Andrew::Hears)
+		def @andrew.go
 			@room = -1
 		end
-		@items << $andrew
+		@items << @andrew
 
-		$cynthia = NPC.new(self, "Cynthia", "Cynthia", 120, 180, 9, Cynthia::Says, Cynthia::Hears)
-		def $cynthia.dialogue
+		@cynthia = NPC.new(self, "Cynthia", "Cynthia", 120, 180, 9, Cynthia::Says, Cynthia::Hears)
+		def @cynthia.dialogue
 			conversation(@title, @says, @hears)
 			@room = -1
-			$andrew.go
-			$briefcase.go
+			@andrew.go
+			@briefcase.go
 		end
-		@items << $cynthia
+		@items << @cynthia
 
-		$eli = NPC.new(self, "Eli", "Eli", 340,60,5, Eli::Says, Eli::Hears)
-		@items << $eli
+		@eli = NPC.new(self, "Eli", "Eli", 340,60,5, Eli::Says, Eli::Hears)
+		@items << @eli
 
 		@items << Anesthesia.new(self, 180, 130, 0)
 		@items << Camera.new(self, 0, 200, 7)
@@ -557,11 +555,11 @@ class GameWindow < Gosu::Window
 		@items << Plant.new(self, 9, 60, 20)
 		
 		code = code[0]*100+code[1]*10+code[2]
-		$briefcase = Briefcase.new(self, 120, 180, -1, code)
-		def $briefcase.go
+		@briefcase = Briefcase.new(self, 120, 180, -1, code)
+		def @briefcase.go
 			@room = 9
 		end
-		@items << $briefcase
+		@items << @briefcase
 
 		@items << Staircase.new(self, 570, 120, 1, 2)
 		@items << Staircase.new(self, 570, 120, 2, 1)
