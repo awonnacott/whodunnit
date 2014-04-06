@@ -604,20 +604,7 @@ class GameWindow < Gosu::Window
 		@items << Car.new(self, 460, 250, 8, [4,6,9])
 		@items << Car.new(self, 460, 250, 9, [4,6,8])
 
-		a = "Use the arrow keys to move. Use space or enter to interact. Use A to accuse."
-		b = "You are a cubicle dweller by trade, an inventor by hobby.\nYou invention has been stolen. Explore to identify the culprit."
-		instructions = Hash[
-			"" => "Use up and down to select an option, then enter to select",
-			"Controls" => a,
-			"Next" => b,
-			"OK" => 0
-		]
-		responses = Hash[
-			"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
-			a => ["Next"],
-			b => ["OK"]
-		]
-		conversation("Tutorial", instructions, responses)
+		conversation("Tutorial", Tutorial::Says, Tutorial::Hears)
 	end
 	def update
 		@player.move
