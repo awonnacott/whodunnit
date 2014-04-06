@@ -679,10 +679,10 @@ class GameWindow < Gosu::Window
 			when 0, -1
 				return
 			when 3
-				smi("You Win", "You Win", ["You Win"])
+				sni("Outcome", "You Win")
 				close
 			else
-				smi("You Lose", "You Lose", ["You Lose"])
+				sni("Outcome", "You Lose")
 				close
 			end
 		when Gosu::KbP

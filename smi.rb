@@ -9,6 +9,10 @@ module SMI # Simple Menu Interface
 			return -1
 		end
 	end
+	def sni(title, message) # Simple Notification Interface
+		dialog = Wx::MessageDialog.new(nil, message, title, Wx::DEFAULT_DIALOG_STYLE|Wx::RESIZE_BORDER|Wx::OK|Wx::CANCEL)
+		return dialog.show_modal
+	end
 	def smi_string(title, message, options)
 		dialog = Wx::SingleChoiceDialog.new(nil, message, title, options, Wx::DEFAULT_DIALOG_STYLE|Wx::RESIZE_BORDER|Wx::OK|Wx::CANCEL)
 		case dialog.show_modal
