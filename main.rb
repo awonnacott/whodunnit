@@ -604,7 +604,7 @@ class GameWindow < Gosu::Window
 		@items << Car.new(self, 460, 250, 8, [4,6,9])
 		@items << Car.new(self, 460, 250, 9, [4,6,8])
 
-		conversation("Tutorial", Tutorial::Says, Tutorial::Hears)
+		aconversation("Tutorial", Tutorial::Says, Tutorial::Hears)
 	end
 	def update
 		@player.move
