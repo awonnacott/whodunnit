@@ -124,6 +124,8 @@ class Anesthesia < Drawable
 	def talk(item)
 		smi("Anesthesia", "You notice a bottle of anesthesia!", ["Continue, asking Graham about it."])
 		@window.player.give(self)
+		@window.hospital.meet
+		@room = -1
 		@window.graham.anesthesia1
 	end
 end
@@ -138,7 +140,7 @@ class Camera < Drawable
 			ladder = "The camera reveals the boss at work during the theft."
 			conversation("Inspection: Camera", Hash["" => "You climb the ladder.", "View footage" => ladder, "OK" => 0], Hash["You climb the ladder." => ["View footage"], ladder => ["OK"]])
 		else
-			if window.boss.met then
+			if @window.boss.met then
 				noladder = "Too high.\nYou need a ladder to examine the camera."
 			else
 				noladder = "A security camera. Out of reach."
@@ -463,14 +465,21 @@ class Player < Entity
 		@inventory.each do |item|
 			if item.is_a? String then
 				lines << "A note which says #{item.inspect}."
+			elsif item.is_a? Anesthesia
+				lines << "Graham's half-empty bottle of anesthesia."
 			else
-				lines << "A #{item.class} called #{item.to_s}."
+				lines << "A #{item.class.to_s.downcase}."
 			end
 		end
 		smi("Inventory", "List of items:", lines)
 	end
 	def give(item)
-		@inventory << item
+		if has? item
+			return false
+		else
+			@inventory << item
+			return true
+		end
 	end
 	def has?(item)
 		@inventory.include? item
@@ -485,7 +494,7 @@ end
 
 class GameWindow < Gosu::Window
 	attr_accessor :items
-	attr_reader :room, :player, :mother, :boss, :graham, :andrew, :cynthia, :eli, :briefcase
+	attr_reader :room, :player, :mother, :boss, :graham, :andrew, :cynthia, :eli, :briefcase, :hospital
 	def initialize
 		super($WIDTH, $HEIGHT, false) # width, height, isfullscreen
 		self.caption = $GAMENAME
@@ -493,7 +502,7 @@ class GameWindow < Gosu::Window
 		setlevel(2)
 
 		@items = []
-		
+
 		@player = Player.new(self, "HAM", true, $WIDTH/2,$HEIGHT/2)
 		@items << @player
 
@@ -530,6 +539,23 @@ class GameWindow < Gosu::Window
 
 		@eli = NPC.new(self, "Eli", "Eli", 340,60,5, Eli::Says, Eli::Hears)
 		@items << @eli
+
+		@hospital = Barricade.new(self, 0,0,0,0,-1) # VERY HAX
+		def @hosptial.met
+			return false
+		end
+		def @hospital.meet
+			def self.met
+				return true
+			end
+		end
+		def @hospital.name
+			return "Hosptial"
+		end
+		def @hospital.talk(item)
+			conversation("Hospital", Hospital::Says, Hospital::Hears)
+		end
+		@items << @hospital
 
 		@items << Anesthesia.new(self, 180, 130, 0)
 		@items << Camera.new(self, 0, 200, 7)
@@ -579,7 +605,7 @@ class GameWindow < Gosu::Window
 		@items << Car.new(self, 460, 250, 9, [4,6,8])
 
 		a = "Use the arrow keys to move. Use space or enter to interact. Use A to accuse."
-		b = "You are a cubicle dweller by trade, an inventor by hobby. You invention has been stolen. Explore to identify the culprit."
+		b = "You are a cubicle dweller by trade, an inventor by hobby.\nYou invention has been stolen. Explore to identify the culprit."
 		instructions = Hash[
 			"" => "Use up and down to select an option, then enter to select",
 			"Controls" => a,
@@ -661,17 +687,15 @@ class GameWindow < Gosu::Window
 			end
 		when Gosu::KbP
 			names = ["Do not telephone"]
-			players = [nil]
+			contacts = [nil]
 			@items.each do |item|
-				if item.is_a? NPC then
-					if item.met then
-						players << item
-						names << item.name
-					end
+				if (item.respond_to? :met) && (item.met)
+					contacts << item
+					names << item.name
 				end
 			end
-			players << nil # so that if smi returns -1 then target is nil
-			target = players[smi("Telephone:", "Whom to call?", names)]
+			contacts << nil # so that if smi returns -1 then target is nil
+			target = contacts[smi("Telephone:", "Whom to call?", names)]
 			return if target.nil?
 			target.talk(@player)
 		when Gosu::KbI
