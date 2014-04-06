@@ -666,10 +666,10 @@ class GameWindow < Gosu::Window
 			when 0, -1
 				return
 			when 3
-				sni("Outcome", "You Win")
+				sni("Outcome", "You Win!", Wx::ICON_INFORMATION)
 				close
 			else
-				sni("Outcome", "You Lose")
+				sni("Outcome", "You Lose", Wx::ICON_ERROR)
 				close
 			end
 		when Gosu::KbP
