@@ -187,8 +187,6 @@ end
 class Ladder < Drawable
 	def initialize(window, x, y, room)
 		super(window, x, y, "ladder", room)
-		@image = Gosu::Image.new(window, "res#{$TILE}/hat/#{image}.png")
-
 	end
 	def talk(item)
 		if @window.boss.met then
@@ -230,7 +228,7 @@ end
 
 class Hat < Drawable
 	attr_reader :kind, :image
-	attr_writer :room
+	attr_writer :room, :x, :y, :room
 	def initialize(window, x, y, room, kind)
 		@window = window
 		@x = x
@@ -239,6 +237,7 @@ class Hat < Drawable
 		@image = Gosu::Image.new(window, "res#{$TILE}/hat/#{kind}.png")
 		@width = @image.width
 		@height = @image.height
+		@kind = kind
 	end
 end
 
@@ -391,6 +390,7 @@ class Player < Entity
 		@speed = 1
 		@inventory = []
 		@skills = []
+		@hat_delay = false
 	end
 	def width
 		@image.width
@@ -403,7 +403,6 @@ class Player < Entity
 			@room = level
 			if x != nil and y != nil then
 				@x = x
-
 				@y = y
 			end
 			return true
@@ -415,9 +414,9 @@ class Player < Entity
 	def button_down(id)
 		case id
 		when Gosu::KbLeft, Gosu::GpLeft
-			@dx -= @speed * 1.5
+			@dx -= @speed
 		when Gosu::KbRight, Gosu::GpRight
-			@dx += @speed * 1.5
+			@dx += @speed
 		when Gosu::KbUp, Gosu::GpUp
 			@dy -= @speed
 		when Gosu::KbDown, Gosu::GpDown
@@ -437,11 +436,11 @@ class Player < Entity
 			@dy = 0
 		end
 	end
-
 	def move
 		@x += @dx
 		@y += @dy
 
+		@hat_delay = false
 		# Checks collision with any item
 		@window.items.each do |item|
 			if collision(self, item) then
@@ -470,7 +469,7 @@ class Player < Entity
 		end
 		@image.draw(@x,@y, 2)
 		unless @hat.nil?
-			@hat.image.draw(@x, @y, 3)
+			@hat.image.draw(@x+width/2-@hat.width/2, @y-@hat.height+6, 3)
 		end
 	end
 	def hit(item)
@@ -481,14 +480,28 @@ class Player < Entity
 		if @window.tutorial then
 			conversation("Tutorial", Tutorial::HatSays, Tutorial::HatHears)
 		end
-		if (item.is_a? Hat) && (sni("Hat", "Wear hat #{item.kind}?", Wx::ICON_QUESTION) == Wx::ID_OK)
-			@hat.x = item.x
-			@hat.y = item.y
-			@hat.room = item.room
-			@inventory.delete @hat
+		if (not @hat_delay) && (item.is_a? Hat) && (sni("Hat", "Wear hat #{item.kind}?", Wx::ICON_QUESTION) == Wx::ID_OK)
+			unless @hat.nil?
+				@hat.x = item.x
+				@hat.y = item.y
+				@hat.room = item.room
+				puts "hat change, #{@x}, #{@y}, #{@width}, #{@height}, #{@hat.x}, #{@hat.y}, #{@hat.width}, #{@hat.height}"
+				if collision(self, @hat)
+					puts "a"
+					@hat.x = @x
+					@hat.y = @y - @hat.height - 1
+					if collision(self, @hat)
+						puts "b"
+						@hat.x = @x
+						@hat.y = @y + @height + @hat.height
+					end
+				end
+				@inventory.delete @hat
+			end
 			@hat = item
 			@hat.room = -1
 			give(@hat)
+			@hat_delay = true
 		end
 		@dx = 0
 		@dy = 0
@@ -664,7 +677,7 @@ class GameWindow < Gosu::Window
 	def button_down(id)
 		case id
 		when Gosu::KbEscape, Gosu::GpButton6
-			close
+			close if sni("Quit?", "Are you sure you want to quit?", Wx::ICON_QUESTION) == Wx::ID_OK
 		when Gosu::KbEnter, Gosu::KbSpace, Gosu::KbReturn
 			@items.each do |item|
 				if touching(@player, item) then
@@ -710,6 +723,7 @@ class GameWindow < Gosu::Window
 					sni("Outcome", "You Lose", Wx::ICON_ERROR)
 					conversation("Tutorial", Tutorial::ASays, Tutorial::AHears)
 					setlevel(2)
+					@player.tp(self, 2, 100, 100)
 					@tutorial = false
 				end
 				return
@@ -730,7 +744,6 @@ class GameWindow < Gosu::Window
 				if smi("Telephone:", "Whom to call?", ["Do not telephone", "Mother"]) == 1
 					conversation("Tutorial", Tutorial::MSays, Tutorial::MHears)
 					conversation("Tutorial", Tutorial::PSays, Tutorial::PHears)
-
 				end
 				return
 			end

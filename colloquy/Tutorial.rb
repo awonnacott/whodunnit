@@ -12,6 +12,61 @@ module Tutorial
 		a => ["Next"],
 		b => ["OK"]
 	]
+	HatSays = Hash[
+		"" => "Use up and down to select an option, then enter to select",
+		"Controls" => a,
+		"Next" => b,
+		"OK" => 0
+	]
+	HatHears = Hash[
+		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
+		a => ["Next"],
+		b => ["OK"]
+	]
+	ISays = Hash[
+		"" => "Use up and down to select an option, then enter to select",
+		"Controls" => a,
+		"Next" => b,
+		"OK" => 0
+	]
+	IHears = Hash[
+		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
+		a => ["Next"],
+		b => ["OK"]
+	]
+	MSays = Hash[
+		"" => "Use up and down to select an option, then enter to select",
+		"Controls" => a,
+		"Next" => b,
+		"OK" => 0
+	]
+	MHears = Hash[
+		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
+		a => ["Next"],
+		b => ["OK"]
+	]
+	PSays = Hash[
+		"" => "Use up and down to select an option, then enter to select",
+		"Controls" => a,
+		"Next" => b,
+		"OK" => 0
+	]
+	PHears = Hash[
+		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
+		a => ["Next"],
+		b => ["OK"]
+	]
+	ASays = Hash[
+		"" => "Use up and down to select an option, then enter to select",
+		"Controls" => a,
+		"Next" => b,
+		"OK" => 0
+	]
+	AHears = Hash[
+		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
+		a => ["Next"],
+		b => ["OK"]
+	]
 end
 
 #Says, Hears
