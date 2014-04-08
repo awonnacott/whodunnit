@@ -145,7 +145,7 @@ class Camera < Drawable
 			else
 				noladder = "A security camera. Out of reach."
 			end
-			smi("Inspection: Camera", noladder, ["OK"])
+			sni("Inspection: Camera", noladder, Wx::ICON_QUESTION)
 		end
 	end
 end
@@ -179,7 +179,7 @@ class Plant < Drawable
 				@image = Gosu::Image.new(@window, "res#{$TILE}/obj/plant.png")
 			end
 		else
-			smi("Inspection: Plant", "A plant.", ["OK"])
+			sni("Inspection: Plant", "A plant.", Wx::ICON_QUESTION)
 		end
 	end
 end
@@ -193,10 +193,10 @@ class Ladder < Drawable
 			@window.player.give(self)
 			@room = -1
 			take = "You take the ladder. It might be useful."
-			smi("Inspection: Ladder", take, ["OK"])
+			sni("Inspection: Ladder", take, Wx::ICON_INFORMATION)
 		else
 			notake = "A ladder. Why? No clue."
-			smi("Inspection: Ladder", notake, ["OK"])
+			sni("Inspection: Ladder", notake, Wx::ICON_EXCLAMATION)
 		end
 	end
 end
@@ -217,10 +217,12 @@ class Briefcase < Drawable
 		code = first*100 + second*10+third
 		if code == 404 || code == @code then
 			brief_response = "Why...These are all details of the security system of art museum!\nShe's a thief, and she stole one of the most famous paintings in the entire country!\nWell, as much as I hate to admit it,\nif the pair of them were out stealing this thing last night,\nthey couldn't have had time to steal my invention.\nThey're far from innocent,\nbut they're no longer suspects."
+			sni("Inspection: Briefcase", brief_response, Wx::ICON_INFORMATION)
 		else
 			brief_response = "The briefcase remains locked."
+			sni("Inspection: Briefcase", brief_response, Wx::ICON_ERROR)
 		end
-		smi("Inspection: Briefcase", brief_response, ["OK"])
+		
 	end
 end
 
@@ -503,6 +505,16 @@ class GameWindow < Gosu::Window
 
 		@items = []
 
+		code = []
+		code[0] = rand(10)
+		code[1] = rand(10)
+		code[2] = rand(10)
+		code = code[0]*100+code[1]*10+code[2]
+		@briefcase = Briefcase.new(self, 120, 180, -1, code)
+		def @briefcase.go
+			@room = 9
+		end
+
 		@player = Player.new(self, "HAM", true, $WIDTH/2,$HEIGHT/2)
 		@items << @player
 
@@ -532,8 +544,8 @@ class GameWindow < Gosu::Window
 		def @cynthia.dialogue
 			conversation(@title, @says, @hears)
 			@room = -1
-			@andrew.go
-			@briefcase.go
+			@window.andrew.go
+			@window.briefcase.go
 		end
 		@items << @cynthia
 
@@ -561,11 +573,7 @@ class GameWindow < Gosu::Window
 		@items << Camera.new(self, 0, 200, 7)
 		@items << Ladder.new(self, 280, -20, 6)
 
-		code = []
-		code[0] = rand(10)
-		code[1] = rand(10)
-		code[2] = rand(10)
-
+		@items << @briefcase
 		@items << Plant.new(self, 4, 80, 100, 0, code[0])
 		@items << Plant.new(self, 4, 120, 100)
 		@items << Plant.new(self, 5, 480, 100)
@@ -579,14 +587,6 @@ class GameWindow < Gosu::Window
 		@items << Plant.new(self, 9, 140, 20)
 		@items << Plant.new(self, 9, 100, 20)
 		@items << Plant.new(self, 9, 60, 20)
-		
-		code = code[0]*100+code[1]*10+code[2]
-		@briefcase = Briefcase.new(self, 120, 180, -1, code)
-		def @briefcase.go
-			@room = 9
-		end
-		@items << @briefcase
-
 		@items << Staircase.new(self, 570, 120, 1, 2)
 		@items << Staircase.new(self, 570, 120, 2, 1)
 		@items << Staircase.new(self, 64, 280, 1, 3)
@@ -595,8 +595,8 @@ class GameWindow < Gosu::Window
 		@items << Door.new(self, false, false, 280, 4, 1)
 		@items << Door.new(self, true, false, 210, 4, 5)
 		@items << Door.new(self, true, true, 210, 5, 4)
-		@items << Door.new(self, false, false, 180, 6, 7)
-		@items << Door.new(self, false, true, 180, 7, 6)
+		@items << Door.new(self, false, false, 188, 6, 7)
+		@items << Door.new(self, false, true, 188, 7, 6)
 		@items << Door.new(self, false, true, 280, 0, 8)
 		@items << Door.new(self, false, false, 280, 8, 0)
 		@items << Car.new(self, 460, 250, 4, [6,8,9])
