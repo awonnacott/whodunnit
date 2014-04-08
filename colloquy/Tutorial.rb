@@ -13,3 +13,27 @@ module Tutorial
 		b => ["OK"]
 	]
 end
+
+#Says, Hears
+# Setting
+# updownleftright
+# enter to interact
+# Pick up a hat
+
+#HatSays, HatHears
+# hat pickup
+# i for inventory
+
+#ISays, IHEars
+# inventory
+# p for phone
+
+#MSays, MHears
+# phone call to mother - she tells you she's coming over
+#PSays, PHears
+
+#ASays, AHears
+# accuse mother
+# end tutorial, warning about accusations
+#  setting the scene - tell about theft
+#  tp to room 2

@@ -187,6 +187,8 @@ end
 class Ladder < Drawable
 	def initialize(window, x, y, room)
 		super(window, x, y, "ladder", room)
+		@image = Gosu::Image.new(window, "res#{$TILE}/hat/#{image}.png")
+
 	end
 	def talk(item)
 		if @window.boss.met then
@@ -223,6 +225,20 @@ class Briefcase < Drawable
 			sni("Inspection: Briefcase", brief_response, Wx::ICON_ERROR)
 		end
 		
+	end
+end
+
+class Hat < Drawable
+	attr_reader :kind, :image
+	attr_writer :room
+	def initialize(window, x, y, room, kind)
+		@window = window
+		@x = x
+		@y = y
+		@room = room
+		@image = Gosu::Image.new(window, "res#{$TILE}/hat/#{kind}.png")
+		@width = @image.width
+		@height = @image.height
 	end
 end
 
@@ -453,12 +469,27 @@ class Player < Entity
 			@image = @image_forward
 		end
 		@image.draw(@x,@y, 2)
+		unless @hat.nil?
+			@hat.image.draw(@x, @y, 3)
+		end
 	end
 	def hit(item)
 		@dx = 0
 		@dy = 0
 	end
 	def talk(item)
+		if @window.tutorial then
+			conversation("Tutorial", Tutorial::HatSays, Tutorial::HatHears)
+		end
+		if (item.is_a? Hat) && (sni("Hat", "Wear hat #{item.kind}?", Wx::ICON_QUESTION) == Wx::ID_OK)
+			@hat.x = item.x
+			@hat.y = item.y
+			@hat.room = item.room
+			@inventory.delete @hat
+			@hat = item
+			@hat.room = -1
+			give(@hat)
+		end
 		@dx = 0
 		@dy = 0
 	end
@@ -469,6 +500,8 @@ class Player < Entity
 				lines << "A note which says #{item.inspect}."
 			elsif item.is_a? Anesthesia
 				lines << "Graham's half-empty bottle of anesthesia."
+			elsif item.is_a? Hat
+				lines << "A hat! A #{@hat.kind}!"
 			else
 				lines << "A #{item.class.to_s.downcase}."
 			end
@@ -496,15 +529,27 @@ end
 
 class GameWindow < Gosu::Window
 	attr_accessor :items
-	attr_reader :room, :player, :mother, :boss, :graham, :andrew, :cynthia, :eli, :briefcase, :hospital
+	attr_reader :room, :tutorial, :player, :mother, :boss, :graham, :andrew, :cynthia, :eli, :briefcase, :hospital
 	def initialize
 		super($WIDTH, $HEIGHT, false) # width, height, isfullscreen
 		self.caption = $GAMENAME
 
-		setlevel(2)
+		setlevel(3)
 
 		@items = []
 
+		# Player
+		@player = Player.new(self, "HAM", true, $WIDTH/2,$HEIGHT/2)
+		@items << @player
+
+		@tutorial = true
+		# Tutorial objects
+		@items << Hat.new(self, 450, 100, 3, "fez")
+		@items << Hat.new(self, 450, 200, 3, "crown")
+		@items << Hat.new(self, 450, 300, 3, "tophat")
+		@items << Hat.new(self, 450, 400, 3, "sombrero")
+
+		# Briefcase (must go before NPCs)
 		code = []
 		code[0] = rand(10)
 		code[1] = rand(10)
@@ -515,9 +560,7 @@ class GameWindow < Gosu::Window
 			@room = 9
 		end
 
-		@player = Player.new(self, "HAM", true, $WIDTH/2,$HEIGHT/2)
-		@items << @player
-
+		# NPCs
 		@mother = NPC.new(self, "Mother", "Mother", 250, 200, 1, Mother::Says, Mother::Hears)
 		@items << @mother
 		
@@ -552,6 +595,7 @@ class GameWindow < Gosu::Window
 		@eli = NPC.new(self, "Eli", "Eli", 340,60,5, Eli::Says, Eli::Hears)
 		@items << @eli
 
+		# Objects in world
 		@hospital = Barricade.new(self, 0,0,0,0,-1) # VERY HAX
 		def @hosptial.met
 			return false
@@ -661,6 +705,15 @@ class GameWindow < Gosu::Window
 			setlevel(9) if $DEBUG
 			@player.tp(self, 9) if $DEBUG
 		when Gosu::KbA
+			if @tutorial
+				if smi("Accusations:", "Accusations?", ["No accusation now", "Mother"]) == 1
+					sni("Outcome", "You Lose", Wx::ICON_ERROR)
+					conversation("Tutorial", Tutorial::ASays, Tutorial::AHears)
+					setlevel(2)
+					@tutorial = false
+				end
+				return
+			end
 			target = smi("Accusations:", "Accusations?", ["No accusation now", "Mother", "Mr. Caleb Bossman", "Neighbor Eli Goldrobe", "Friend Graham", "Cynthia Chapeau", "Professor Andrew Reactor"])
 			case target
 			when 0, -1
@@ -673,6 +726,14 @@ class GameWindow < Gosu::Window
 				close
 			end
 		when Gosu::KbP
+			if @tutorial
+				if smi("Telephone:", "Whom to call?", ["Do not telephone", "Mother"]) == 1
+					conversation("Tutorial", Tutorial::MSays, Tutorial::MHears)
+					conversation("Tutorial", Tutorial::PSays, Tutorial::PHears)
+
+				end
+				return
+			end
 			names = ["Do not telephone"]
 			contacts = [nil]
 			@items.each do |item|
@@ -687,6 +748,9 @@ class GameWindow < Gosu::Window
 			target.talk(@player)
 		when Gosu::KbI
 			@player.showinventory
+			if @tutorial
+				conversation("Tutorial", Tutorial::ISays, Tutorial::IHears)
+			end
 		end
 		@player.button_down(id)
 	end
