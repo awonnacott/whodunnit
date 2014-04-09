@@ -1,8 +1,8 @@
 module Tutorial
 	Says = Hash[
 		"" => "Use up and down to select an option, then enter to select.\nYou can also use the mouse.\nTo skip this tutorial, press escape, cancel, or Skip Tutorial.",
-		"Story" => "You are a cubicle dweller by trade, an inventor by hobby."
-		"Controls" => "Use the arrow keys to move.\nWalk up to a hat and press return to take the hat."
+		"Story" => "You are a cubicle dweller by trade, an inventor by hobby.\n\nYour invention has been stolen.\nExplore to identify the culprit",
+		"Controls" => "Use the arrow keys to move.\nWalk up to a hat and press return to take the hat.",
 		"OK" => 0,
 		"Skip Tutorial" => 0
 	]
@@ -31,7 +31,7 @@ module Tutorial
 	]
 
 	MSays = Hash[
-		"" => "Hello, honey! I was about to call you!\nI'm passing through and need a place to stay,\n so I'm going to stay at your house tonight if that's okay.",
+		"" => "Hello, honey! I was about to call you!\nI'm passing through and need a place to stay,\nso I'm going to stay at your house tonight if that's okay.",
 		"Sure" => "Wonderful! I'll see you later.",
 		"Wait, what?" => "Wonderful! I'll see you later.",
 		"Okay, mom." => "Love you, goodbye!",
@@ -39,7 +39,7 @@ module Tutorial
 		"Goodbye." => 0,
 	]
 	MHears = Hash[
-		"Hello, honey! I'm passing through and need a place to stay,\n so I'm going to stay at your house tonight if that's okay." => ["Sure", "Wait, what?"],
+		"Hello, honey! I was about to call you!\nI'm passing through and need a place to stay,\nso I'm going to stay at your house tonight if that's okay." => ["Sure", "Wait, what?"],
 		"Wonderful! I'll see you later." => ["Okay, mom."],
 		"Love you, goodbye!" => ["I love you too.", "Goodbye."]
 	]

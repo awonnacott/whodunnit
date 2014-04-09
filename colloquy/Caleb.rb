@@ -16,7 +16,8 @@ module Caleb
 		accusation1 => coverup,
 		accusation2 => coverup,
 		proofq => camera,
-		"Of course. Goodbye." => 0]
+		"Of course. Goodbye." => 0
+	]
 	Hears = Hash[
 		"Hello, Matthewson." => [greeting1, greeting2, greeting3],
 		indignant => [accusation1, accusation2],

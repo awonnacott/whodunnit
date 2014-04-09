@@ -659,7 +659,8 @@ class GameWindow < Gosu::Window
 		@items << Car.new(self, 460, 250, 9, [4,6,8])
 
 		print "\nCheck your taskbar for the game window\n"
-		if conversation("Tutorial", Tutorial::Says, Tutorial::Hears).include? "Skip Tutorial"
+		part1 = conversation("Tutorial", Tutorial::Says, Tutorial::Hears)
+		if (part1.include? "Skip Tutorial") || (part1.include? nil)
 			@tutorial = false
 			@items << Staircase.new(self, 64, 280, 3, 1)
 		end
@@ -766,6 +767,8 @@ class GameWindow < Gosu::Window
 			if @tutorial
 				conversation("Tutorial", Tutorial::ISays, Tutorial::IHears)
 			end
+		when Gosu::KbH
+			sni("Help:", "Use the arrow keys to walk.\nWalk up to objects and press return to interact.\nPress 'a' to accuse.\nPress 'p' for a phone.\nPress 'i' for your inventory.\nPress 'h' for this dialog.", Wx::ICON_INFORMATION)
 		end
 		@player.button_down(id)
 	end
