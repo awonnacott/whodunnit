@@ -477,9 +477,6 @@ class Player < Entity
 		@dy = 0
 	end
 	def talk(item)
-		if @window.tutorial then
-			conversation("Tutorial", Tutorial::HatSays, Tutorial::HatHears)
-		end
 		if (not @hat_delay) && (item.is_a? Hat) && (sni("Hat", "Wear hat #{item.kind}?", Wx::ICON_QUESTION) == Wx::ID_OK)
 			unless @hat.nil?
 				@hat.x = item.x
@@ -499,6 +496,9 @@ class Player < Entity
 			@hat.room = -1
 			give(@hat)
 			@hat_delay = true
+			if @window.tutorial then
+				conversation("Tutorial", Tutorial::HatSays, Tutorial::HatHears)
+			end
 		end
 		@dx = 0
 		@dy = 0
@@ -659,7 +659,10 @@ class GameWindow < Gosu::Window
 		@items << Car.new(self, 460, 250, 9, [4,6,8])
 
 		print "\nCheck your taskbar for the game window\n"
-		conversation("Tutorial", Tutorial::Says, Tutorial::Hears)
+		if conversation("Tutorial", Tutorial::Says, Tutorial::Hears).include? "Skip Tutorial"
+			@tutorial = false
+			@items << Staircase.new(self, 64, 280, 3, 1)
+		end
 	end
 	def update
 		@player.move

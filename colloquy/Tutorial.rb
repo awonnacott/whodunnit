@@ -1,94 +1,75 @@
 module Tutorial
-	a = "Use the arrow keys to move. Use space or enter to interact. Use A to accuse."
-	b = "You are a cubicle dweller by trade, an inventor by hobby.\nYou invention has been stolen. Explore to identify the culprit."
 	Says = Hash[
-		"" => "Use up and down to select an option, then enter to select",
-		"Controls" => a,
-		"Next" => b,
-		"OK" => 0
+		"" => "Use up and down to select an option, then enter to select.\nYou can also use the mouse.\nTo skip this tutorial, press escape, cancel, or Skip Tutorial.",
+		"Story" => "You are a cubicle dweller by trade, an inventor by hobby."
+		"Controls" => "Use the arrow keys to move.\nWalk up to a hat and press return to take the hat."
+		"OK" => 0,
+		"Skip Tutorial" => 0
 	]
 	Hears = Hash[
-		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
-		a => ["Next"],
-		b => ["OK"]
+		"Use up and down to select an option, then enter to select.\nYou can also use the mouse.\nTo skip this tutorial, press escape, cancel, or Skip Tutorial." => ["Story", "Controls", "Skip Tutorial"],
+		"You are a cubicle dweller by trade, an inventor by hobby.\n\nYour invention has been stolen.\nExplore to identify the culprit" => ["Controls", "Skip Tutorial"],
+		"Use the arrow keys to move.\nWalk up to a hat and press return to take the hat." => ["Story", "OK"]
 	]
+
 	HatSays = Hash[
-		"" => "Use up and down to select an option, then enter to select",
-		"Controls" => a,
-		"Next" => b,
+		"" => "Good job taking the hat!",
+		"Next" => "Now, press 'i' to look in your inventory and see the hat.",
 		"OK" => 0
 	]
 	HatHears = Hash[
-		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
-		a => ["Next"],
-		b => ["OK"]
+		"Good job taking the hat!" => ["Next"],
+		"Now, press 'i' to look in your inventory and see the hat." => ["OK"]
 	]
+
 	ISays = Hash[
-		"" => "Use up and down to select an option, then enter to select",
-		"Controls" => a,
-		"Next" => b,
+		"" => "Excellent! Now press 'p' to call your mother on the phone.",
 		"OK" => 0
 	]
 	IHears = Hash[
-		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
-		a => ["Next"],
-		b => ["OK"]
+		"Excellent! Now press 'p' to call your mother on the phone." => ["OK"]
 	]
+
 	MSays = Hash[
-		"" => "Use up and down to select an option, then enter to select",
-		"Controls" => a,
-		"Next" => b,
-		"OK" => 0
+		"" => "Hello, honey! I was about to call you!\nI'm passing through and need a place to stay,\n so I'm going to stay at your house tonight if that's okay.",
+		"Sure" => "Wonderful! I'll see you later.",
+		"Wait, what?" => "Wonderful! I'll see you later.",
+		"Okay, mom." => "Love you, goodbye!",
+		"I love you too." => 0,
+		"Goodbye." => 0,
 	]
 	MHears = Hash[
-		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
-		a => ["Next"],
-		b => ["OK"]
+		"Hello, honey! I'm passing through and need a place to stay,\n so I'm going to stay at your house tonight if that's okay." => ["Sure", "Wait, what?"],
+		"Wonderful! I'll see you later." => ["Okay, mom."],
+		"Love you, goodbye!" => ["I love you too.", "Goodbye."]
 	]
+
 	PSays = Hash[
-		"" => "Use up and down to select an option, then enter to select",
-		"Controls" => a,
-		"Next" => b,
+		"" => "At any point during the game,\nuse the telephone to communicate with anyone you have talked to.\n\nThere is one last control,\nused to accuse someone of stealing your invention.\nIt is on the 'a' key.\n\nTry accusing your mother now.",
 		"OK" => 0
 	]
 	PHears = Hash[
-		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
-		a => ["Next"],
-		b => ["OK"]
+		"At any point during the game,\nuse the telephone to communicate with anyone you have talked to.\n\nThere is one last control,\nused to accuse someone of stealing your invention.\nIt is on the 'a' key.\n\nTry accusing your mother now." => ["OK"],
 	]
+
+
 	ASays = Hash[
-		"" => "Use up and down to select an option, then enter to select",
-		"Controls" => a,
-		"Next" => b,
+		"" => "Of course, you did not acutally lose.\nThis was simulated.\nIf you accuse anyone outside the tutorial,the game ends.\nYou get one guess. Use it wisely.\n\nTo review instructions at any time, press 'h'.",
+		"Next" => "It is now the next morning, and time to search for clues.\nStart by going downstairs and try to identify the culprit.",
 		"OK" => 0
 	]
 	AHears = Hash[
-		"Use up and down to select an option, then enter to select" => ["Controls", "Next"],
-		a => ["Next"],
-		b => ["OK"]
+		"Of course, you did not acutally lose.\nThis was simulated.\nIf you accuse anyone outside the tutorial,the game ends.\nYou get one guess. Use it wisely.\n\nTo review instructions at any time, press 'h'." => ["Next"],
+		"It is now the next morning, and time to search for clues.\nStart by going downstairs and try to identify the culprit." => ["OK"],
 	]
 end
 
-#Says, Hears
-# Setting
-# updownleftright
-# enter to interact
-# Pick up a hat
 
-#HatSays, HatHears
-# hat pickup
-# i for inventory
 
-#ISays, IHEars
-# inventory
-# p for phone
 
-#MSays, MHears
-# phone call to mother - she tells you she's coming over
-#PSays, PHears
 
-#ASays, AHears
-# accuse mother
-# end tutorial, warning about accusations
-#  setting the scene - tell about theft
-#  tp to room 2
+
+
+
+
+
