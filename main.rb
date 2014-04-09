@@ -485,13 +485,10 @@ class Player < Entity
 				@hat.x = item.x
 				@hat.y = item.y
 				@hat.room = item.room
-				puts "hat change, #{@x}, #{@y}, #{@width}, #{@height}, #{@hat.x}, #{@hat.y}, #{@hat.width}, #{@hat.height}"
 				if collision(self, @hat)
-					puts "a"
 					@hat.x = @x
 					@hat.y = @y - @hat.height - 1
 					if collision(self, @hat)
-						puts "b"
 						@hat.x = @x
 						@hat.y = @y + @height + @hat.height
 					end
@@ -647,7 +644,7 @@ class GameWindow < Gosu::Window
 		@items << Staircase.new(self, 570, 120, 1, 2)
 		@items << Staircase.new(self, 570, 120, 2, 1)
 		@items << Staircase.new(self, 64, 280, 1, 3)
-		@items << Staircase.new(self, 64, 280, 3, 1)
+		#@items << Staircase.new(self, 64, 280, 3, 1)
 		@items << Door.new(self, false, true, 280, 1, 4)
 		@items << Door.new(self, false, false, 280, 4, 1)
 		@items << Door.new(self, true, false, 210, 4, 5)
@@ -661,6 +658,7 @@ class GameWindow < Gosu::Window
 		@items << Car.new(self, 460, 250, 8, [4,6,9])
 		@items << Car.new(self, 460, 250, 9, [4,6,8])
 
+		print "\nCheck your taskbar for the game window\n"
 		conversation("Tutorial", Tutorial::Says, Tutorial::Hears)
 	end
 	def update
@@ -725,6 +723,7 @@ class GameWindow < Gosu::Window
 					setlevel(2)
 					@player.tp(self, 2, 100, 100)
 					@tutorial = false
+					@items << Staircase.new(self, 64, 280, 3, 1)
 				end
 				return
 			end
@@ -733,7 +732,7 @@ class GameWindow < Gosu::Window
 			when 0, -1
 				return
 			when 3
-				sni("Outcome", "You Win!", Wx::ICON_INFORMATION)
+				sni("Outcome", "You Win!", Wx::ICON_INFORMA120TION)
 				close
 			else
 				sni("Outcome", "You Lose", Wx::ICON_ERROR)
