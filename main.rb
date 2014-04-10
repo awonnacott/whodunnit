@@ -48,11 +48,11 @@ def touching(player, object)
 	oymin = object.y
 	oymax = object.y + object.height
 	touchx = false
-	touchx ||= 0 <= pxmin - oxmax && pxmin - oxmax <= 2 # doesn't touch to right of objects otherwise
-	touchx ||= 0 <= oxmin - pxmax && oxmin - pxmax <= 1
+	touchx ||= 0 <= pxmin - oxmax && pxmin - oxmax <= 3 # @player.speed*1.5
+	touchx ||= 0 <= oxmin - pxmax && oxmin - pxmax <= 3
 	touchy = false
-	touchy ||= 0 <= pymin - oymax && pymin - oymax <= 1
-	touchy ||= 0 <= oymin - pymax && oymin - pymax <= 1
+	touchy ||= 0 <= pymin - oymax && pymin - oymax <= 2 # @player.speed
+	touchy ||= 0 <= oymin - pymax && oymin - pymax <= 2
 	hitsx = false
 	hitsx ||= pxmin <= oxmin && oxmin <= pxmax
 	hitsx ||= pxmin <= oxmax && oxmax <= pxmax
@@ -258,12 +258,12 @@ end
 
 class Staircase < Entity
 	attr_reader :target
-	def initialize(window, x, y, room, target)
+	def initialize(window, x, y, room, target, flip)
 		@window = window
-		if target > room then
-			@image = Gosu::Image.new(window, "res#{$TILE}/obj/stairsup.png")
+		if flip
+			@image = Gosu::Image.new(window, "res#{$TILE}/obj/stairsleft.png")
 		else
-			@image = Gosu::Image.new(window, "res#{$TILE}/obj/stairsdown.png")
+			@image = Gosu::Image.new(window, "res#{$TILE}/obj/stairsright.png")
 		end
 		@x = x
 		@y = y
@@ -387,7 +387,7 @@ class Player < Entity
 		@y = y
 		@dx = 0
 		@dy = 0
-		@speed = 1
+		@speed = 2
 		@inventory = []
 		@skills = []
 		@hat_delay = false
@@ -414,9 +414,9 @@ class Player < Entity
 	def button_down(id)
 		case id
 		when Gosu::KbLeft, Gosu::GpLeft
-			@dx -= @speed
+			@dx -= @speed*1.5
 		when Gosu::KbRight, Gosu::GpRight
-			@dx += @speed
+			@dx += @speed*1.5
 		when Gosu::KbUp, Gosu::GpUp
 			@dy -= @speed
 		when Gosu::KbDown, Gosu::GpDown
@@ -560,11 +560,11 @@ class GameWindow < Gosu::Window
 		@items << Hat.new(self, 450, 400, 3, "sombrero")
 
 		# Briefcase (must go before NPCs)
-		code = []
-		code[0] = rand(10)
-		code[1] = rand(10)
-		code[2] = rand(10)
-		code = code[0]*100+code[1]*10+code[2]
+		codes = []
+		codes[0] = rand(10)
+		codes[1] = rand(10)
+		codes[2] = rand(10)
+		code = codes[0]*100+codes[1]*10+codes[2]
 		@briefcase = Briefcase.new(self, 120, 180, -1, code)
 		def @briefcase.go
 			@room = 9
@@ -628,23 +628,23 @@ class GameWindow < Gosu::Window
 		@items << Ladder.new(self, 280, -20, 6)
 
 		@items << @briefcase
-		@items << Plant.new(self, 4, 80, 100, 0, code[0])
+		@items << Plant.new(self, 4, 80, 100, 0, codes[0])
 		@items << Plant.new(self, 4, 120, 100)
 		@items << Plant.new(self, 5, 480, 100)
 		@items << Plant.new(self, 5, 520, 100)
 		@items << Plant.new(self, 5, 560, 100)
 		@items << Plant.new(self, 8, 50, 130)
 		@items << Plant.new(self, 8, 90, 130)
-		@items << Plant.new(self, 8, 130, 130, 1, code[1])
+		@items << Plant.new(self, 8, 130, 130, 1, codes[1])
 		@items << Plant.new(self, 9, 220, 20)
-		@items << Plant.new(self, 9, 180, 20, 2, code[2])
+		@items << Plant.new(self, 9, 180, 20, 2, codes[2])
 		@items << Plant.new(self, 9, 140, 20)
 		@items << Plant.new(self, 9, 100, 20)
 		@items << Plant.new(self, 9, 60, 20)
-		@items << Staircase.new(self, 570, 120, 1, 2)
-		@items << Staircase.new(self, 570, 120, 2, 1)
-		@items << Staircase.new(self, 64, 280, 1, 3)
-		#@items << Staircase.new(self, 64, 280, 3, 1)
+		@items << Staircase.new(self, 540, 110, 1, 2, false)
+		@items << Staircase.new(self, 540, 110, 2, 1, false)
+		@items << Staircase.new(self, 44, 280, 1, 3, true)
+		#@items << Staircase.new(self, 44, 280, 3, 1, true)
 		@items << Door.new(self, false, true, 280, 1, 4)
 		@items << Door.new(self, false, false, 280, 4, 1)
 		@items << Door.new(self, true, false, 210, 4, 5)
@@ -662,7 +662,7 @@ class GameWindow < Gosu::Window
 		part1 = conversation("Tutorial", Tutorial::Says, Tutorial::Hears)
 		if (part1.include? "Skip Tutorial") || (part1.include? nil)
 			@tutorial = false
-			@items << Staircase.new(self, 64, 280, 3, 1)
+			@items << Staircase.new(self, 44, 280, 3, 1, true)
 		end
 	end
 	def update
@@ -727,7 +727,7 @@ class GameWindow < Gosu::Window
 					setlevel(2)
 					@player.tp(self, 2, 100, 100)
 					@tutorial = false
-					@items << Staircase.new(self, 64, 280, 3, 1)
+					@items << Staircase.new(self, 44, 280, 3, 1, true)
 				end
 				return
 			end
