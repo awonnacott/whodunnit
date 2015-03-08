@@ -27,16 +27,17 @@ end
 
 class Block
 	attr_accessor :height, :width, :x, :y
-	def initialize (window, height, length, x, y, isspecial)
+	def initialize (window, height, width, x, y, isspecial)
 		@window = window
 		@x = x
 		@y = y
-		@length = length
+		@width = width
+		@height = height
 		@color = Gosu::Color::GREEN
 		@color = Gosu::Color::RED if isspecial
 	end
 	def update
-		(0..length-1).to_a.each do |square|
+		(0..@width-1).to_a.each do |square|
 			if @isvertical then
 				@window.grid[x+square][y] = self
 			end
